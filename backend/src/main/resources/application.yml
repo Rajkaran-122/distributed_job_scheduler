@@ -1,0 +1,157 @@
+spring:
+  application:
+    name: job-scheduler-platform
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:job_scheduler}
+    username: ${DB_USER:scheduler_app}
+    password: ${DB_PASSWORD:changeme}
+    hikari:
+      pool-name: scheduler-hikari-pool
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: 5
+      connection-timeout: 5000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 30000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+        query.in_clause_parameter_padding: true
+        generate_statistics: false
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 5000
+    threads:
+      max: 200
+
+spring.lifecycle:
+  timeout-per-shutdown-phase: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    mail:
+      # Actuator auto-registers a MailHealthIndicator whenever spring-boot-starter-mail
+      # is on the classpath, which tries to open an SMTP connection on every /actuator/health
+      # call. That's the wrong signal for local dev / this project's default docker-compose
+      # setup, where no SMTP server runs on localhost:1025 -- a missing mail relay isn't
+      # a reason to report the whole application as unhealthy. Turn it off here; if a real
+      # SMTP host is configured in production, re-enable via MAIL_HEALTH_ENABLED=true.
+      enabled: ${MAIL_HEALTH_ENABLED:false}
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE:0.1}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:CHANGE_ME_IN_PRODUCTION_MIN_256_BITS_LONG_SECRET_KEY_VALUE}
+      access-token-ttl-minutes: ${JWT_ACCESS_TTL:15}
+      refresh-token-ttl-days: ${JWT_REFRESH_TTL:7}
+      issuer: job-scheduler-platform
+    api-key:
+      prefix: "sk_live_"
+    rate-limit:
+      requests-per-minute: ${RATE_LIMIT_RPM:120}
+
+  scheduler:
+    dispatcher:
+      enabled: ${DISPATCHER_ENABLED:true}
+      poll-interval-ms: ${DISPATCHER_POLL_INTERVAL_MS:1000}
+      batch-size: ${DISPATCHER_BATCH_SIZE:200}
+      leader-lock-key: "scheduler:dispatcher:leader"
+      leader-lock-ttl-seconds: 10
+      # Renewal must fire well before the lock TTL lapses (roughly half the TTL) so a
+      # normal GC pause or slow tick never causes an unnecessary leadership handoff.
+      # Kept as an explicit precomputed value rather than SpEL arithmetic on the TTL
+      # property, since @Scheduled's fixedDelayString is a plain property placeholder,
+      # not a bean-lookup expression -- see DispatcherLeaderElector.
+      leader-lock-renewal-interval-ms: ${DISPATCHER_LEADER_RENEWAL_MS:5000}
+    worker:
+      enabled: ${WORKER_ENABLED:true}
+      pool-size: ${WORKER_POOL_SIZE:10}
+      lease-duration-seconds: ${WORKER_LEASE_SECONDS:30}
+      lease-renew-interval-seconds: 10
+      heartbeat-interval-seconds: 5
+      heartbeat-interval-ms: ${WORKER_HEARTBEAT_MS:5000}
+    reaper:
+      enabled: true
+      scan-interval-ms: 5000
+    retry:
+      default-max-attempts: 5
+      default-base-delay-seconds: 2
+      default-max-delay-seconds: 3600
+      default-jitter-factor: 0.2
+
+  ai:
+    provider: ${AI_PROVIDER:none}   # none | anthropic | openai
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:}
+    enabled: ${AI_FEATURES_ENABLED:false}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId}] - %msg%n"
+  level:
+    root: INFO
+    com.scheduler.platform: ${APP_LOG_LEVEL:INFO}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}

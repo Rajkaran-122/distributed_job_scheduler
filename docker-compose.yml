@@ -1,0 +1,147 @@
+name: job-scheduler-platform
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: scheduler-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: job_scheduler
+      POSTGRES_USER: scheduler_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scheduler_app -d job_scheduler"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - scheduler-net
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  redis:
+    image: redis:7-alpine
+    container_name: scheduler-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - scheduler-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: scheduler-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: job_scheduler
+      DB_USER: scheduler_app
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      DISPATCHER_ENABLED: "true"
+      WORKER_ENABLED: "true"
+      WORKER_POOL_SIZE: ${WORKER_POOL_SIZE:-10}
+      AI_PROVIDER: ${AI_PROVIDER:-none}
+      AI_API_KEY: ${AI_API_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - scheduler-net
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: scheduler-frontend
+    restart: unless-stopped
+    networks:
+      - scheduler-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: scheduler-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - scheduler-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: scheduler-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - scheduler-net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: scheduler-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      # No provisioning config shipped yet -- add a Prometheus datasource manually via
+      # the Grafana UI (Connections -> Data sources -> Prometheus -> URL: http://prometheus:9090),
+      # or add ./monitoring/grafana/provisioning here once you have one.
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - scheduler-net
+
+networks:
+  scheduler-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

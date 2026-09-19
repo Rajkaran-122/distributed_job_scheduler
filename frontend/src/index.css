@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-bg text-text font-body antialiased;
+  }
+  html.light body {
+    @apply bg-bg-light text-text-light;
+  }
+  ::selection {
+    @apply bg-brand/30;
+  }
+  * {
+    @apply border-border;
+  }
+  html.light * {
+    @apply border-border-light;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #232838; border-radius: 999px; }
+  html.light ::-webkit-scrollbar-thumb { background: #D4D7DE; }
+
+  :focus-visible {
+    outline: 2px solid #5B8DEF;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .mono-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

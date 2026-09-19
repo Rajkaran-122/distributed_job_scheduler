@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/job_scheduler
+  data:
+    redis:
+      host: redis
+
+logging:
+  pattern:
+    console: >-
+      {"timestamp":"%d{ISO8601}","level":"%level","logger":"%logger{36}",
+      "correlationId":"%X{correlationId}","tenantId":"%X{tenantId}","message":"%msg"}%n
