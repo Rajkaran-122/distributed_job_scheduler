@@ -81,9 +81,20 @@ class JobClaimingConcurrencyTest extends AbstractIntegrationTest {
             futures.add(executor.submit(() -> {
                 startLatch.await(); // all threads fire as close to simultaneously as possible
                 TransactionTemplate tx = new TransactionTemplate(transactionManager);
-                return tx.execute(status -> jobRepository
-                        .findClaimableJobs(new UUID[]{queueId}, Instant.now(), batchSizePerThread)
-                        .stream().map(Job::getId).collect(Collectors.toList()));
+                return tx.execute(status -> {
+                    List<Job> claimed = jobRepository.findClaimableJobs(
+                            new UUID[]{queueId}, Instant.now(), batchSizePerThread);
+
+                    // Model the real claim operation: the status transition happens
+                    // in the same transaction, so a later transaction cannot reclaim
+                    // the same job after the row lock is released.
+                    claimed.forEach(job -> job.setStatus(JobStatus.SCHEDULED));
+                    jobRepository.saveAll(claimed);
+
+                    return claimed.stream()
+                            .map(Job::getId)
+                            .collect(Collectors.toList());
+                });
             }));
         }
 
