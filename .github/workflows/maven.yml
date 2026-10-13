@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,8 +22,3 @@ jobs:
 
       - name: Build and test with Maven
         run: mvn -B verify --file backend/pom.xml
-
-      - name: Update dependency graph
-        uses: advanced-security/maven-dependency-submission-action@a64327a7329c9939cf675e458452febe1894a70c
-        with:
-          directory: backend
