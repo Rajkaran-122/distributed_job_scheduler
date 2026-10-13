@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/toast';
+import { SchedulerLogo } from '@/components/ui/scheduler-logo';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -38,11 +39,8 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg p-6">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand/15">
-            <Activity className="h-4 w-4 text-brand" />
-          </div>
-          <span className="font-display text-sm font-semibold text-text">Scheduler</span>
+        <div className="mb-2">
+          <SchedulerLogo size="md" showText={true} />
         </div>
 
         <div className="space-y-1 mb-6">

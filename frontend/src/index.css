@@ -9,34 +9,108 @@
   html.light {
     color-scheme: light;
   }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-bg text-text font-body antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
   html.light body {
     @apply bg-bg-light text-text-light;
   }
+
   ::selection {
     @apply bg-brand/30;
   }
+
   * {
     @apply border-border;
   }
   html.light * {
     @apply border-border-light;
   }
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #232838; border-radius: 999px; }
-  html.light ::-webkit-scrollbar-thumb { background: #D4D7DE; }
 
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #252B3B;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #353D52; background-clip: content-box; }
+  html.light ::-webkit-scrollbar-thumb { background: #D4D7DE; background-clip: content-box; }
+  html.light ::-webkit-scrollbar-thumb:hover { background: #BFC3CC; background-clip: content-box; }
+
+  /* Focus */
   :focus-visible {
     outline: 2px solid #5B8DEF;
     outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
   .mono-tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Skeleton shimmer for loading states */
+  .skeleton {
+    @apply rounded bg-surface-raised relative overflow-hidden;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.03) 40%,
+      rgba(255,255,255,0.06) 50%,
+      rgba(255,255,255,0.03) 60%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  html.light .skeleton {
+    background: linear-gradient(
+      90deg,
+      #F0F1F5 0%,
+      #E4E5EA 40%,
+      #D8D9DE 50%,
+      #E4E5EA 60%,
+      #F0F1F5 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Staggered fade-in utility classes */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+
+  /* Page transition wrapper */
+  .page-enter {
+    @apply animate-fade-in;
+  }
+
+  /* Smooth theme transition */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
   }
 }

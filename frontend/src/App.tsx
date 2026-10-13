@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth';
 
 import LoginPage from '@/pages/login';
 import RegisterPage from '@/pages/register';
+import HomePage from '@/pages/home';
 import DashboardPage from '@/pages/dashboard';
 import JobsPage from '@/pages/jobs';
 import JobDetailPage from '@/pages/job-detail';
@@ -15,6 +16,8 @@ import AuditLogPage from '@/pages/audit-log';
 import ApiKeysPage from '@/pages/api-keys';
 import OrganizationPage from '@/pages/organization';
 
+import ArchitecturePage from '@/pages/architecture';
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -25,6 +28,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/architecture" element={<ArchitecturePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -35,7 +40,7 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:jobId" element={<JobDetailPage />} />
           <Route path="/queues" element={<QueuesPage />} />

@@ -11,8 +11,16 @@ interface ThemeState {
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
+  // Enable smooth transition between themes
+  root.classList.add('theme-transitioning');
   root.classList.remove('dark', 'light');
   root.classList.add(theme);
+  // Remove the transition class after animations finish
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      root.classList.remove('theme-transitioning');
+    }, 350);
+  });
 }
 
 export const useThemeStore = create<ThemeState>()(

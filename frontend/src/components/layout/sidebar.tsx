@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ListTree, Layers, Users, Skull, ShieldCheck, Sparkles,
-  KeyRound, ScrollText, Building2, Activity,
+  KeyRound, ScrollText, Building2, GitBranch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SchedulerLogo } from '@/components/ui/scheduler-logo';
 
 const NAV = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/architecture', label: 'Architecture & Invariants', icon: GitBranch },
   { to: '/jobs', label: 'Jobs', icon: ListTree },
   { to: '/queues', label: 'Queues', icon: Layers },
   { to: '/workers', label: 'Workers', icon: Users },
@@ -19,17 +21,10 @@ const NAV = [
 
 export function Sidebar() {
   return (
-    <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-border bg-surface">
-      <div className="flex items-center gap-2 px-5 h-14 border-b border-border">
-        <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-brand/15">
-          <Activity className="h-4 w-4 text-brand" />
-          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-healthy ring-2 ring-surface" />
-        </div>
-        <div className="leading-tight">
-          <p className="font-display text-sm font-semibold text-text">Scheduler</p>
-          <p className="text-[10px] text-muted font-mono -mt-0.5">control plane</p>
-        </div>
-      </div>
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-surface">
+      <NavLink to="/" className="flex items-center gap-2 px-4 h-14 border-b border-border hover:bg-surface-raised transition-colors group">
+        <SchedulerLogo size="sm" showText={true} />
+      </NavLink>
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
         {NAV.map(({ to, label, icon: Icon, end }) => (

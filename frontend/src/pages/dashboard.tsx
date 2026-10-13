@@ -1,12 +1,14 @@
+import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Clock3, PlayCircle, CheckCircle2, Skull, Activity } from 'lucide-react';
+import { Clock3, PlayCircle, CheckCircle2, Skull, Activity, ArrowDown } from 'lucide-react';
 import { analyticsApi, workersApi, queuesApi } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { PulseRail } from '@/components/charts/pulse-rail';
 import { useJobEvents } from '@/hooks/useJobEvents';
 import { formatRelativeTime, truncateId } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { IntelligenceHero } from '@/components/hero/intelligence-hero';
 
 const FAKE_THROUGHPUT = Array.from({ length: 24 }).map((_, i) => ({
   hour: `${i}:00`,
@@ -40,10 +42,11 @@ function StatCard({ label, value, icon: Icon, tone, hint }: {
 }
 
 export default function DashboardPage() {
+  const telemetryRef = useRef<HTMLDivElement>(null);
   const { data: stats } = useQuery({ queryKey: ['queue-stats'], queryFn: analyticsApi.queueStats, refetchInterval: 8000 });
   const { data: workers } = useQuery({ queryKey: ['workers'], queryFn: workersApi.list, refetchInterval: 8000 });
   const { data: queues } = useQuery({ queryKey: ['queues'], queryFn: queuesApi.list, refetchInterval: 15000 });
-  const { events } = useJobEvents(12);
+  const { events, connected } = useJobEvents(12);
 
   const totals = (stats ?? []).reduce(
     (acc, q) => ({
@@ -57,15 +60,32 @@ export default function DashboardPage() {
 
   const activeWorkers = (workers ?? []).filter((w) => w.status === 'ACTIVE').length;
 
+  const scrollToTelemetry = () => {
+    telemetryRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-xl font-semibold text-text">Overview</h1>
-          <p className="text-sm text-muted">Real-time health across every queue and worker.</p>
+    <div className="space-y-8 animate-fade-in pb-8">
+      {/* High-End AI Intelligence Hero */}
+      <IntelligenceHero
+        activeWorkers={activeWorkers}
+        runningJobs={totals.running}
+        pendingJobs={totals.pending}
+        connected={connected}
+        onExploreClick={scrollToTelemetry}
+      />
+
+      {/* Fleet Telemetry & Operations */}
+      <div ref={telemetryRef} className="space-y-6 pt-2 scroll-mt-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-text flex items-center gap-2">
+              Fleet Telemetry & Throughput
+            </h2>
+            <p className="text-xs text-muted">Real-time health across worker leases, database queues, and event streams.</p>
+          </div>
+          <Badge tone="healthy" dot>{activeWorkers} worker{activeWorkers === 1 ? '' : 's'} active</Badge>
         </div>
-        <Badge tone="healthy" dot>{activeWorkers} worker{activeWorkers === 1 ? '' : 's'} active</Badge>
-      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard label="Pending" value={totals.pending} icon={Clock3} tone="brand" hint="Waiting in queue" />
@@ -170,6 +190,7 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PulseRail } from '@/components/charts/pulse-rail';
 import { toast } from '@/components/ui/toast';
+import { SchedulerLogo } from '@/components/ui/scheduler-logo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -38,12 +39,8 @@ export default function LoginPage() {
       {/* Left: brand / signature panel */}
       <div className="relative hidden lg:col-span-2 lg:flex flex-col justify-between overflow-hidden border-r border-border bg-surface p-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(91,141,239,0.12),transparent_45%)]" />
-        <div className="relative flex items-center gap-2">
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-md bg-brand/15">
-            <Activity className="h-4 w-4 text-brand" />
-            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-healthy ring-2 ring-surface" />
-          </div>
-          <span className="font-display text-sm font-semibold text-text">Scheduler</span>
+        <div className="relative">
+          <SchedulerLogo size="md" showText={true} />
         </div>
 
         <div className="relative space-y-6">
