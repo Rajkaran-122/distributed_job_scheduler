@@ -511,16 +511,16 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right Column: High-Res Architecture Topology Preview */}
+              {/* Right Column: Ai_image.png Architecture Preview */}
               <div className="lg:col-span-6">
                 <div
                   onClick={() => navigate('/architecture')}
-                  className="cursor-pointer group relative rounded-2xl border border-white/10 bg-[#05070B] p-3 shadow-2xl overflow-hidden hover:border-blue-500/40 transition-all"
+                  className="cursor-pointer group relative rounded-2xl border border-white/10 bg-[#05070B] p-3 shadow-2xl overflow-hidden hover:border-blue-500/40 transition-all flex items-center justify-center"
                 >
                   <img
-                    src="/architecture/hld-system-topology.svg"
-                    alt="Distributed Job Scheduler High-Level Topology"
-                    className="w-full object-contain rounded-xl"
+                    src="/Ai_image.png"
+                    alt="Distributed Job Scheduler Architecture"
+                    className="w-full object-contain rounded-xl max-h-[560px]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                     <span className="flex items-center gap-2 text-blue-400 font-mono text-xs font-semibold">

@@ -566,7 +566,7 @@ export default function ArchitecturePage() {
                   variant="outline"
                   onClick={() =>
                     setZoomImg({
-                      src: '/architecture/lld-engine-loop.svg',
+                      src: '/Ai_image.png',
                       title: 'Low-Level Design — Spring Boot Execution Loop',
                     })
                   }
@@ -581,14 +581,14 @@ export default function ArchitecturePage() {
             {/* Diagram Graphic */}
             <div className="relative mt-6 group rounded-xl overflow-hidden border border-white/10 bg-[#05070B]">
               <img
-                src="/architecture/lld-engine-loop.svg"
+                src="/Ai_image.png"
                 alt="Spring Boot Low-Level Job Execution Loop"
                 className="w-full object-contain max-h-[600px] mx-auto"
               />
               <button
                 onClick={() =>
                   setZoomImg({
-                    src: '/architecture/lld-engine-loop.svg',
+                    src: '/Ai_image.png',
                     title: 'Low-Level Design — Spring Boot Execution Loop',
                   })
                 }
