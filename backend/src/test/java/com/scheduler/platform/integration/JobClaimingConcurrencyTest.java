@@ -89,7 +89,9 @@ class JobClaimingConcurrencyTest extends AbstractIntegrationTest {
                     // in the same transaction, so a later transaction cannot reclaim
                     // the same job after the row lock is released.
                     claimed.forEach(job -> job.setStatus(JobStatus.SCHEDULED));
-                    jobRepository.saveAll(claimed);
+                    // Flush before the transaction releases the row locks so the
+                    // next concurrent transaction observes these jobs as SCHEDULED.
+                    jobRepository.saveAllAndFlush(claimed);
 
                     return claimed.stream()
                             .map(Job::getId)
